@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Healthy Elderly Chat</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <!-- Auth Status Area -->
+      <div class="row mb-4">
+        <div class="col">
+          <div id="auth-status" class="d-flex justify-content-end">
+            <div id="logged-out-state">
+              <button
+                class="btn btn-outline-primary me-2"
+                onclick="showModal('login-modal')"
+              >
+                Login
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="showModal('register-modal')"
+              >
+                Register
+              </button>
+            </div>
+            <div id="logged-in-state" style="display: none">
+              <span id="user-greeting" class="me-2 align-self-center"></span>
+              <button class="btn btn-outline-danger" onclick="logout()">
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-center mb-4">Healthy Elderly Chat</h1>
+
+      <!-- Main content area -->
+      <div id="main-content" style="display: none">
+        <div class="row row-cols-2 g-4">
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Lottery Odds</h5>
+                <p id="lottery-result" class="card-text">
+                  Click to fetch odds...
+                </p>
+                <button class="btn btn-primary" onclick="fetchLottery()">
+                  Get Lottery Odds
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Weather Forecast</h5>
+                <p id="weather-result" class="card-text">
+                  Click to fetch weather...
+                </p>
+                <button class="btn btn-primary" onclick="fetchWeather()">
+                  Get Weather
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Latest News</h5>
+                <p id="news-result" class="card-text">Click to fetch news...</p>
+                <button class="btn btn-primary" onclick="fetchNews()">
+                  Get News
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Chat with Assistant</h5>
+                <div
+                  id="chatbox"
+                  class="card-text mb-2"
+                  style="height: 150px; overflow-y: auto"
+                ></div>
+                <input
+                  type="text"
+                  id="chat-input"
+                  class="form-control mb-2"
+                  placeholder="Type your message..."
+                />
+                <button class="btn btn-primary" onclick="sendMessage()">
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login required message -->
+      <div id="login-required" class="text-center my-5 py-5">
+        <h2>Please login to access the chat application</h2>
+        <p>Create an account or sign in to continue</p>
+      </div>
+
+      <!-- Auth modals -->
+      <!-- Login Modal -->
+      <div id="login-modal" class="modal-custom" style="display: none">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeModal('login-modal')"
+            >&times;</span
+          >
+          <h2>Login</h2>
+          <div
+            class="alert alert-danger"
+            id="login-error"
+            style="display: none"
+          ></div>
+          <form id="login-form">
+            <div class="mb-3">
+              <label for="login-email" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="login-email"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="login-password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="login-password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+          </form>
+          <hr />
+          <div class="text-center">
+            <p>Or login with:</p>
+            <button class="btn btn-outline-danger" onclick="googleLogin()">
+              <img
+                src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/icons/google.svg"
+                alt="Google"
+                width="16"
+                height="16"
+              />
+              Google
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Register Modal -->
+      <div id="register-modal" class="modal-custom" style="display: none">
+        <div class="modal-content">
+          <span class="close-btn" onclick="closeModal('register-modal')"
+            >&times;</span
+          >
+          <h2>Register</h2>
+          <div
+            class="alert alert-danger"
+            id="register-error"
+            style="display: none"
+          ></div>
+          <form id="register-form">
+            <div class="mb-3">
+              <label for="register-name" class="form-label">Full Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="register-name"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="register-email" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="register-email"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="register-password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="register-password"
+                required
+                minlength="8"
+              />
+              <small class="form-text text-muted"
+                >Password must be at least 8 characters</small
+              >
+            </div>
+            <div class="mb-3">
+              <label for="register-confirm-password" class="form-label"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="register-confirm-password"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+          </form>
+        </div>
+      </div>
+
+      <p class="mt-3 text-center">
+        <small
+          >This chatbot is a derivative of the Yi-1.5-9B-Chat model by 01.AI,
+          used under the Apache 2.0 License. For more information, visit:
+          <a href="https://github.com/01-ai/Yi-1.5"
+            >https://github.com/01-ai/Yi-1.5</a
+          ></small
+        >
+      </p>
+    </div>
+
+    <script>
+      // Check authentication status when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        checkAuthStatus();
+        handleGoogleRedirect();
+      });
+
+      // Handle Google redirect
+      function handleGoogleRedirect() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("success")) {
+          // Refresh auth status after successful Google login
+          checkAuthStatus();
+        }
+      }
+
+      // Authentication status check
+      function checkAuthStatus() {
+        fetch("/auth/status", {
+          method: "GET",
+          credentials: "same-origin",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.authenticated) {
+              showLoggedInState(data.user);
+              // Make sure we're on the home page
+              if (
+                window.location.pathname !== "/" &&
+                window.location.pathname !== "/index"
+              ) {
+                window.location.href = "/";
+              }
+            } else {
+              showLoggedOutState();
+            }
+          })
+          .catch((error) => {
+            console.error("Authentication check failed:", error);
+            showLoggedOutState();
+          });
+      }
+
+      // Show logged in state
+      function showLoggedInState(user) {
+        document.getElementById("logged-out-state").style.display = "none";
+        document.getElementById("logged-in-state").style.display = "flex";
+        document.getElementById("user-greeting").textContent = `Welcome, ${
+          user.name || user.email
+        }!`;
+        document.getElementById("main-content").style.display = "block";
+        document.getElementById("login-required").style.display = "none";
+      }
+
+      // Show logged out state
+      function showLoggedOutState() {
+        document.getElementById("logged-out-state").style.display = "flex";
+        document.getElementById("logged-in-state").style.display = "none";
+        document.getElementById("main-content").style.display = "none";
+        document.getElementById("login-required").style.display = "block";
+      }
+
+      // Show modal
+      function showModal(modalId) {
+        document.getElementById(modalId).style.display = "block";
+      }
+
+      // Close modal
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+        // Clear form errors
+        const errorElem = document.getElementById(
+          modalId === "login-modal" ? "login-error" : "register-error"
+        );
+        errorElem.style.display = "none";
+        errorElem.textContent = "";
+
+        // Reset form
+        const formId =
+          modalId === "login-modal" ? "login-form" : "register-form";
+        document.getElementById(formId).reset();
+      }
+
+      // Register form submission
+      document
+        .getElementById("register-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const password = document.getElementById("register-password").value;
+          const confirmPassword = document.getElementById(
+            "register-confirm-password"
+          ).value;
+
+          if (password !== confirmPassword) {
+            const error = document.getElementById("register-error");
+            error.textContent = "Passwords do not match";
+            error.style.display = "block";
+            return;
+          }
+
+          const userData = {
+            name: document.getElementById("register-name").value,
+            email: document.getElementById("register-email").value,
+            password: password,
+          };
+
+          fetch("/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.error) {
+                document.getElementById("register-error").textContent =
+                  data.error;
+                document.getElementById("register-error").style.display =
+                  "block";
+              } else {
+                closeModal("register-modal");
+                // Auto-login after successful registration
+                login(userData.email, userData.password);
+                // Redirect to home page will be handled in the login function
+              }
+            })
+            .catch((error) => {
+              console.error("Registration error:", error);
+              document.getElementById("register-error").textContent =
+                "Registration failed. Please try again.";
+              document.getElementById("register-error").style.display = "block";
+            });
+        });
+
+      // Login form submission
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("login-email").value;
+          const password = document.getElementById("login-password").value;
+
+          login(email, password);
+        });
+
+      // Login function
+      function login(email, password) {
+        fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, password: password }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.error) {
+              document.getElementById("login-error").textContent = data.error;
+              document.getElementById("login-error").style.display = "block";
+            } else {
+              closeModal("login-modal");
+              // Update UI state
+              checkAuthStatus();
+              // Redirect to home page
+              window.location.href = "/";
+            }
+          })
+          .catch((error) => {
+            console.error("Login error:", error);
+            document.getElementById("login-error").textContent =
+              "Login failed. Please try again.";
+            document.getElementById("login-error").style.display = "block";
+          });
+      }
+
+      // Logout function
+      function logout() {
+        fetch("/logout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            showLoggedOutState();
+            // Stay on current page but update UI
+          })
+          .catch((error) => {
+            console.error("Logout error:", error);
+          });
+      }
+
+      // Google login
+      function googleLogin() {
+        window.location.href = "/google_login";
+      }
+
+      // Existing functionality
+      function fetchLottery() {
+        console.log("Sending lottery request");
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ message: "lottery" }),
+        })
+          .then((r) => {
+            if (r.status === 401) {
+              showLoggedOutState();
+              throw new Error("Authentication required");
+            }
+            return r.json();
+          })
+          .then((data) => {
+            console.log("Received lottery response:", data);
+            document.getElementById("lottery-result").innerText = data.response;
+          })
+          .catch((err) => {
+            console.error("Lottery fetch error:", err);
+            if (err.message !== "Authentication required") {
+              document.getElementById("lottery-result").innerText =
+                "Error fetching lottery data";
+            }
+          });
+      }
+
+      function fetchWeather() {
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ message: "weather" }),
+        })
+          .then((r) => {
+            if (r.status === 401) {
+              showLoggedOutState();
+              throw new Error("Authentication required");
+            }
+            return r.json();
+          })
+          .then((data) => {
+            document.getElementById("weather-result").innerText = data.response;
+          })
+          .catch((err) => {
+            console.error("Weather fetch error:", err);
+            if (err.message !== "Authentication required") {
+              document.getElementById("weather-result").innerText =
+                "Error fetching weather data";
+            }
+          });
+      }
+
+      function fetchNews() {
+        document.getElementById("news-result").innerText = "Loading...";
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ message: "news" }),
+        })
+          .then((r) => {
+            if (r.status === 401) {
+              showLoggedOutState();
+              throw new Error("Authentication required");
+            }
+            if (!r.ok) throw new Error(`HTTP error! Status: ${r.status}`);
+            return r.json();
+          })
+          .then((data) => {
+            document.getElementById("news-result").innerText =
+              data.response || "No news available";
+          })
+          .catch((error) => {
+            console.error("News fetch error:", error);
+            if (error.message !== "Authentication required") {
+              document.getElementById("news-result").innerText =
+                "Error fetching news: " + error.message;
+            }
+          });
+      }
+
+      function sendMessage() {
+        const input = document.getElementById("chat-input");
+        const message = input.value.trim();
+        if (!message) return;
+
+        const chatbox = document.getElementById("chatbox");
+        chatbox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ message: message }),
+        })
+          .then((r) => {
+            if (r.status === 401) {
+              showLoggedOutState();
+              throw new Error("Authentication required");
+            }
+            return r.json();
+          })
+          .then((data) => {
+            chatbox.innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
+          })
+          .catch((error) => {
+            console.error("Chat error:", error);
+            if (error.message !== "Authentication required") {
+              chatbox.innerHTML += `<p class="text-danger"><strong>Error:</strong> Failed to send message</p>`;
+            }
+          });
+
+        input.value = "";
+      }
+    </script>
+  </body>
+</html>
